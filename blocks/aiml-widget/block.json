@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "aiml-chat/widget",
+  "version": "1.0.0",
+  "title": "AIML.chat Widget",
+  "category": "widgets",
+  "icon": "format-chat",
+  "description": "Embed the AIML.chat AI assistant widget.",
+  "keywords": ["ai", "chat", "assistant", "widget"],
+  "textdomain": "aiml-chat",
+  "supports": {
+    "html": false,
+    "inserter": true
+  },
+  "attributes": {
+    "apiKey": {
+      "type": "string",
+      "default": ""
+    },
+    "position": {
+      "type": "string",
+      "default": "right"
+    },
+    "theme": {
+      "type": "string",
+      "default": "auto"
+    }
+  },
+  "editorScript": "file:./index.js",
+  "render": "file:./render.php"
+}

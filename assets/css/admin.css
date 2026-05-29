@@ -1,0 +1,12 @@
+.aiml-wrap .aiml-intro {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+}
+.aiml-wrap .aiml-intro a {
+    color: #2563eb;
+    text-decoration: none;
+}
+.aiml-wrap .aiml-intro a:hover {
+    text-decoration: underline;
+}

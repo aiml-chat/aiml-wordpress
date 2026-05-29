@@ -1,0 +1,30 @@
+name: Plugin Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  plugin-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer, wp-cli
+
+      - name: Install Plugin Check (PCP)
+        run: composer global require wp-coding-standards/wpcs dealerdirect/phpcodesniffer-composer-installer
+
+      - name: Run PHPCS
+        run: |
+          ~/.composer/vendor/bin/phpcs \
+            --standard=WordPress \
+            --extensions=php \
+            --ignore=node_modules,vendor \
+            .

@@ -1,0 +1,153 @@
+<?php
+defined( 'ABSPATH' ) || exit;
+
+class AIML_Admin {
+
+    public function __construct() {
+        add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
+        add_action( 'admin_init', array( $this, 'register_settings' ) );
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+    }
+
+    public function add_settings_page() {
+        add_options_page(
+            __( 'AIML.chat Settings', 'aiml-chat' ),
+            __( 'AIML.chat', 'aiml-chat' ),
+            'manage_options',
+            'aiml-chat',
+            array( $this, 'render_settings_page' )
+        );
+    }
+
+    public function register_settings() {
+        register_setting( 'aiml_chat_settings', 'aiml_chat_api_key', array(
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'default'           => '',
+        ) );
+        register_setting( 'aiml_chat_settings', 'aiml_chat_enabled', array(
+            'type'              => 'boolean',
+            'sanitize_callback' => 'rest_sanitize_boolean',
+            'default'           => true,
+        ) );
+        register_setting( 'aiml_chat_settings', 'aiml_chat_position', array(
+            'type'              => 'string',
+            'sanitize_callback' => array( $this, 'sanitize_position' ),
+            'default'           => 'right',
+        ) );
+        register_setting( 'aiml_chat_settings', 'aiml_chat_theme', array(
+            'type'              => 'string',
+            'sanitize_callback' => array( $this, 'sanitize_theme' ),
+            'default'           => 'auto',
+        ) );
+        register_setting( 'aiml_chat_settings', 'aiml_chat_excluded_pages', array(
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_textarea_field',
+            'default'           => '',
+        ) );
+    }
+
+    public function sanitize_position( $value ) {
+        return in_array( $value, array( 'left', 'right' ), true ) ? $value : 'right';
+    }
+
+    public function sanitize_theme( $value ) {
+        return in_array( $value, array( 'light', 'dark', 'auto' ), true ) ? $value : 'auto';
+    }
+
+    public function enqueue_admin_assets( $hook ) {
+        if ( 'settings_page_aiml-chat' !== $hook ) {
+            return;
+        }
+        wp_enqueue_style(
+            'aiml-chat-admin',
+            AIML_CHAT_PLUGIN_URL . 'assets/css/admin.css',
+            array(),
+            AIML_CHAT_VERSION
+        );
+    }
+
+    public function render_settings_page() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+        $api_key  = get_option( 'aiml_chat_api_key', '' );
+        $enabled  = get_option( 'aiml_chat_enabled', true );
+        $position = get_option( 'aiml_chat_position', 'right' );
+        $theme    = get_option( 'aiml_chat_theme', 'auto' );
+        $excluded = get_option( 'aiml_chat_excluded_pages', '' );
+        ?>
+        <div class="wrap aiml-wrap">
+            <h1><?php esc_html_e( 'AIML.chat Settings', 'aiml-chat' ); ?></h1>
+            <p class="aiml-intro">
+                <?php esc_html_e( 'Connect your site to an AI assistant powered by your own content.', 'aiml-chat' ); ?>
+                <a href="https://aiml.chat/dashboard" target="_blank" rel="noopener">
+                    <?php esc_html_e( 'Get your API key →', 'aiml-chat' ); ?>
+                </a>
+            </p>
+            <form method="post" action="options.php">
+                <?php settings_fields( 'aiml_chat_settings' ); ?>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th scope="row"><label for="aiml_chat_api_key"><?php esc_html_e( 'API Key', 'aiml-chat' ); ?></label></th>
+                        <td>
+                            <input
+                                type="password"
+                                id="aiml_chat_api_key"
+                                name="aiml_chat_api_key"
+                                value="<?php echo esc_attr( $api_key ); ?>"
+                                class="regular-text"
+                                autocomplete="off"
+                                placeholder="aiml_pk_…"
+                            />
+                            <p class="description"><?php esc_html_e( 'Find this in your AIML.chat dashboard under Website Settings.', 'aiml-chat' ); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'Enable Widget', 'aiml-chat' ); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="aiml_chat_enabled" value="1" <?php checked( $enabled ); ?> />
+                                <?php esc_html_e( 'Show the chat widget on this site', 'aiml-chat' ); ?>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="aiml_chat_position"><?php esc_html_e( 'Position', 'aiml-chat' ); ?></label></th>
+                        <td>
+                            <select id="aiml_chat_position" name="aiml_chat_position">
+                                <option value="right" <?php selected( $position, 'right' ); ?>><?php esc_html_e( 'Bottom right', 'aiml-chat' ); ?></option>
+                                <option value="left" <?php selected( $position, 'left' ); ?>><?php esc_html_e( 'Bottom left', 'aiml-chat' ); ?></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="aiml_chat_theme"><?php esc_html_e( 'Theme', 'aiml-chat' ); ?></label></th>
+                        <td>
+                            <select id="aiml_chat_theme" name="aiml_chat_theme">
+                                <option value="auto" <?php selected( $theme, 'auto' ); ?>><?php esc_html_e( 'Auto (follows system)', 'aiml-chat' ); ?></option>
+                                <option value="light" <?php selected( $theme, 'light' ); ?>><?php esc_html_e( 'Light', 'aiml-chat' ); ?></option>
+                                <option value="dark" <?php selected( $theme, 'dark' ); ?>><?php esc_html_e( 'Dark', 'aiml-chat' ); ?></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="aiml_chat_excluded_pages"><?php esc_html_e( 'Exclude Pages', 'aiml-chat' ); ?></label></th>
+                        <td>
+                            <textarea
+                                id="aiml_chat_excluded_pages"
+                                name="aiml_chat_excluded_pages"
+                                rows="4"
+                                class="large-text"
+                                placeholder="/cart&#10;/checkout&#10;/my-account"
+                            ><?php echo esc_textarea( $excluded ); ?></textarea>
+                            <p class="description"><?php esc_html_e( 'One URL path per line. Widget will not appear on these pages.', 'aiml-chat' ); ?></p>
+                        </td>
+                    </tr>
+                </table>
+                <?php submit_button(); ?>
+            </form>
+        </div>
+        <?php
+    }
+}
