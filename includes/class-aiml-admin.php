@@ -25,6 +25,11 @@ class AIML_Admin {
             'sanitize_callback' => 'sanitize_text_field',
             'default'           => '',
         ) );
+        register_setting( 'aiml_chat_settings', 'aiml_chat_website_id', array(
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'default'           => '',
+        ) );
         register_setting( 'aiml_chat_settings', 'aiml_chat_enabled', array(
             'type'              => 'boolean',
             'sanitize_callback' => 'rest_sanitize_boolean',
@@ -40,6 +45,11 @@ class AIML_Admin {
             'sanitize_callback' => array( $this, 'sanitize_theme' ),
             'default'           => 'auto',
         ) );
+        register_setting( 'aiml_chat_settings', 'aiml_chat_primary_color', array(
+            'type'              => 'string',
+            'sanitize_callback' => array( $this, 'sanitize_color' ),
+            'default'           => '',
+        ) );
         register_setting( 'aiml_chat_settings', 'aiml_chat_excluded_pages', array(
             'type'              => 'string',
             'sanitize_callback' => 'sanitize_textarea_field',
@@ -53,6 +63,12 @@ class AIML_Admin {
 
     public function sanitize_theme( $value ) {
         return in_array( $value, array( 'light', 'dark', 'auto' ), true ) ? $value : 'auto';
+    }
+
+    public function sanitize_color( $value ) {
+        $value = sanitize_text_field( $value );
+        // Accept a #rgb / #rrggbb hex colour; otherwise store empty so the widget uses its default.
+        return preg_match( '/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $value ) ? $value : '';
     }
 
     public function enqueue_admin_assets( $hook ) {
@@ -71,11 +87,13 @@ class AIML_Admin {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
         }
-        $api_key  = get_option( 'aiml_chat_api_key', '' );
-        $enabled  = get_option( 'aiml_chat_enabled', true );
-        $position = get_option( 'aiml_chat_position', 'right' );
-        $theme    = get_option( 'aiml_chat_theme', 'auto' );
-        $excluded = get_option( 'aiml_chat_excluded_pages', '' );
+        $api_key    = get_option( 'aiml_chat_api_key', '' );
+        $website_id = get_option( 'aiml_chat_website_id', '' );
+        $enabled    = get_option( 'aiml_chat_enabled', true );
+        $position   = get_option( 'aiml_chat_position', 'right' );
+        $theme      = get_option( 'aiml_chat_theme', 'auto' );
+        $color      = get_option( 'aiml_chat_primary_color', '' );
+        $excluded   = get_option( 'aiml_chat_excluded_pages', '' );
         ?>
         <div class="wrap aiml-wrap">
             <h1><?php esc_html_e( 'AIML.chat Settings', 'aiml-chat' ); ?></h1>
@@ -104,6 +122,21 @@ class AIML_Admin {
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><label for="aiml_chat_website_id"><?php esc_html_e( 'Website ID', 'aiml-chat' ); ?></label></th>
+                        <td>
+                            <input
+                                type="text"
+                                id="aiml_chat_website_id"
+                                name="aiml_chat_website_id"
+                                value="<?php echo esc_attr( $website_id ); ?>"
+                                class="regular-text"
+                                autocomplete="off"
+                                placeholder="e.g. 3f2a…"
+                            />
+                            <p class="description"><?php esc_html_e( 'Required for lead capture — lets the assistant collect a visitor email when it can’t answer. Find it next to your API key in the dashboard.', 'aiml-chat' ); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><?php esc_html_e( 'Enable Widget', 'aiml-chat' ); ?></th>
                         <td>
                             <label>
@@ -129,6 +162,20 @@ class AIML_Admin {
                                 <option value="light" <?php selected( $theme, 'light' ); ?>><?php esc_html_e( 'Light', 'aiml-chat' ); ?></option>
                                 <option value="dark" <?php selected( $theme, 'dark' ); ?>><?php esc_html_e( 'Dark', 'aiml-chat' ); ?></option>
                             </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="aiml_chat_primary_color"><?php esc_html_e( 'Brand Colour', 'aiml-chat' ); ?></label></th>
+                        <td>
+                            <input
+                                type="text"
+                                id="aiml_chat_primary_color"
+                                name="aiml_chat_primary_color"
+                                value="<?php echo esc_attr( $color ); ?>"
+                                class="regular-text"
+                                placeholder="#4f46e5"
+                            />
+                            <p class="description"><?php esc_html_e( 'Optional. A hex colour (e.g. #4f46e5) for the widget accent, to match your brand. Leave blank for the default.', 'aiml-chat' ); ?></p>
                         </td>
                     </tr>
                     <tr>

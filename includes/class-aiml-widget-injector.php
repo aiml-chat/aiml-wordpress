@@ -12,13 +12,16 @@ class AIML_Widget_Injector {
             return;
         }
 
-        $api_key  = get_option( 'aiml_chat_api_key', '' );
-        $position = get_option( 'aiml_chat_position', 'right' );
-        $theme    = get_option( 'aiml_chat_theme', 'auto' );
+        $api_key    = get_option( 'aiml_chat_api_key', '' );
+        $website_id = get_option( 'aiml_chat_website_id', '' );
+        $position   = get_option( 'aiml_chat_position', 'right' );
+        $theme      = get_option( 'aiml_chat_theme', 'auto' );
+        $color      = get_option( 'aiml_chat_primary_color', '' );
 
+        $widget_url = get_option( 'aiml_chat_widget_url', 'https://cdn.aiml.chat/v1/widget.js' );
         wp_enqueue_script(
             'aiml-chat-widget',
-            'https://cdn.aiml.chat/v1/widget.js',
+            $widget_url,
             array(),
             null, // version managed by CDN content hash
             array(
@@ -27,22 +30,18 @@ class AIML_Widget_Injector {
             )
         );
 
-        // Add data attributes via a small inline script that sets them before the async script runs.
-        // Inline script is the safest cross-theme way to pass config without exposing it in markup.
-        $config = array(
-            'apiKey'   => $api_key,
-            'position' => $position,
-            'theme'    => $theme,
+        // The widget reads its config from data-* attributes on the script tag. WordPress builds the
+        // tag for enqueued scripts, so we append the attributes via the script_loader_tag filter below.
+        $api_endpoint = get_option( 'aiml_chat_api_url', '' );
+        $this->config = array(
+            'apiKey'       => $api_key,
+            'websiteId'    => $website_id,
+            'position'     => $position,
+            'theme'        => $theme,
+            'primaryColor' => $color,
+            'apiEndpoint'  => $api_endpoint,
         );
-
-        $inline = sprintf(
-            'document.currentScript.closest("script")?.setAttribute("data-api-key", %s);',
-            wp_json_encode( $api_key )
-        );
-
-        // Use filter_input to safely add data attributes to the script tag.
         add_filter( 'script_loader_tag', array( $this, 'add_data_attributes' ), 10, 2 );
-        $this->config = $config;
     }
 
     /** @var array */
@@ -57,8 +56,17 @@ class AIML_Widget_Injector {
         if ( ! empty( $this->config['apiKey'] ) ) {
             $attrs .= ' data-api-key="' . esc_attr( $this->config['apiKey'] ) . '"';
         }
+        if ( ! empty( $this->config['websiteId'] ) ) {
+            $attrs .= ' data-website-id="' . esc_attr( $this->config['websiteId'] ) . '"';
+        }
         $attrs .= ' data-position="' . esc_attr( $this->config['position'] ) . '"';
         $attrs .= ' data-theme="' . esc_attr( $this->config['theme'] ) . '"';
+        if ( ! empty( $this->config['primaryColor'] ) ) {
+            $attrs .= ' data-primary-color="' . esc_attr( $this->config['primaryColor'] ) . '"';
+        }
+        if ( ! empty( $this->config['apiEndpoint'] ) ) {
+            $attrs .= ' data-api-url="' . esc_attr( $this->config['apiEndpoint'] ) . '"';
+        }
 
         return str_replace( ' src=', $attrs . ' src=', $tag );
     }
