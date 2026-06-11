@@ -4,7 +4,7 @@ Tags: ai, chatbot, assistant, widget, documentation
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,6 +81,11 @@ Optional attributes:
 
 == Changelog ==
 
+= 1.2.0 =
+* Position and Theme now default to "Default (use dashboard setting)" — appearance configured in your AIML.chat dashboard (colours, avatar, launcher, greeting, auto-open and more) applies unless explicitly overridden here
+* Fixed a PHP warning on archive, search and 404 pages when "Exclude Pages" was set
+* Advanced `aiml_chat_widget_url` / `aiml_chat_api_url` options are now registered with URL sanitization
+
 = 1.1.0 =
 * Added Website ID setting — enables visitor lead capture when the assistant can't answer
 * Added Brand Colour setting to match the widget accent to your theme
@@ -92,6 +97,9 @@ Optional attributes:
 * Initial release
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Appearance is now managed centrally in your AIML.chat dashboard; plugin settings act as per-site overrides. Existing explicit Position/Theme choices are preserved.
 
 = 1.1.0 =
 Adds lead capture (set your Website ID) and brand-colour customisation. Open Settings → AIML.chat to configure.

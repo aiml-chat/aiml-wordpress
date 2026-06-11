@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-06
+
+### Changed
+- **Position and Theme now default to "Default (use dashboard setting)"** — the appearance configured
+  centrally in the AIML.chat dashboard (colours, avatar, launcher, greeting, auto-open…) applies unless
+  explicitly overridden here. Previously the plugin always emitted `data-position`/`data-theme`,
+  permanently overriding the dashboard. Applied consistently across all three injection paths:
+  site-wide injector, `[aiml_chat]` shortcode, and the Gutenberg block.
+
+### Fixed
+- PHP warning on archive/search/404 pages: `get_permalink()` returns `false` there, which broke the
+  excluded-pages matching.
+- `aiml_chat_widget_url` / `aiml_chat_api_url` advanced options are now properly registered with URL
+  sanitization (previously read but unregistered).
+
 ## [1.1.0] — 2026-06
 
 ### Added

@@ -35,15 +35,17 @@ class AIML_Admin {
             'sanitize_callback' => 'rest_sanitize_boolean',
             'default'           => true,
         ) );
+        // Empty string = "Default": no data-attribute is emitted, so the appearance configured in
+        // the AIML.chat dashboard applies. An explicit choice here overrides the dashboard.
         register_setting( 'aiml_chat_settings', 'aiml_chat_position', array(
             'type'              => 'string',
             'sanitize_callback' => array( $this, 'sanitize_position' ),
-            'default'           => 'right',
+            'default'           => '',
         ) );
         register_setting( 'aiml_chat_settings', 'aiml_chat_theme', array(
             'type'              => 'string',
             'sanitize_callback' => array( $this, 'sanitize_theme' ),
-            'default'           => 'auto',
+            'default'           => '',
         ) );
         register_setting( 'aiml_chat_settings', 'aiml_chat_primary_color', array(
             'type'              => 'string',
@@ -55,14 +57,26 @@ class AIML_Admin {
             'sanitize_callback' => 'sanitize_textarea_field',
             'default'           => '',
         ) );
+        // Advanced overrides (no UI — set via wp option update / filters). Registered so they have
+        // a sanitize path and are exported/erased like every other plugin option.
+        register_setting( 'aiml_chat_settings', 'aiml_chat_widget_url', array(
+            'type'              => 'string',
+            'sanitize_callback' => 'esc_url_raw',
+            'default'           => 'https://cdn.aiml.chat/v1/widget.js',
+        ) );
+        register_setting( 'aiml_chat_settings', 'aiml_chat_api_url', array(
+            'type'              => 'string',
+            'sanitize_callback' => 'esc_url_raw',
+            'default'           => '',
+        ) );
     }
 
     public function sanitize_position( $value ) {
-        return in_array( $value, array( 'left', 'right' ), true ) ? $value : 'right';
+        return in_array( $value, array( 'left', 'right' ), true ) ? $value : '';
     }
 
     public function sanitize_theme( $value ) {
-        return in_array( $value, array( 'light', 'dark', 'auto' ), true ) ? $value : 'auto';
+        return in_array( $value, array( 'light', 'dark', 'auto' ), true ) ? $value : '';
     }
 
     public function sanitize_color( $value ) {
@@ -90,8 +104,8 @@ class AIML_Admin {
         $api_key    = get_option( 'aiml_chat_api_key', '' );
         $website_id = get_option( 'aiml_chat_website_id', '' );
         $enabled    = get_option( 'aiml_chat_enabled', true );
-        $position   = get_option( 'aiml_chat_position', 'right' );
-        $theme      = get_option( 'aiml_chat_theme', 'auto' );
+        $position   = get_option( 'aiml_chat_position', '' );
+        $theme      = get_option( 'aiml_chat_theme', '' );
         $color      = get_option( 'aiml_chat_primary_color', '' );
         $excluded   = get_option( 'aiml_chat_excluded_pages', '' );
         ?>
@@ -149,15 +163,18 @@ class AIML_Admin {
                         <th scope="row"><label for="aiml_chat_position"><?php esc_html_e( 'Position', 'aiml-chat' ); ?></label></th>
                         <td>
                             <select id="aiml_chat_position" name="aiml_chat_position">
+                                <option value="" <?php selected( $position, '' ); ?>><?php esc_html_e( 'Default (use dashboard setting)', 'aiml-chat' ); ?></option>
                                 <option value="right" <?php selected( $position, 'right' ); ?>><?php esc_html_e( 'Bottom right', 'aiml-chat' ); ?></option>
                                 <option value="left" <?php selected( $position, 'left' ); ?>><?php esc_html_e( 'Bottom left', 'aiml-chat' ); ?></option>
                             </select>
+                            <p class="description"><?php esc_html_e( 'Appearance (colours, avatar, launcher, greeting…) is managed centrally in your AIML.chat dashboard. Settings here override it for this site only.', 'aiml-chat' ); ?></p>
                         </td>
                     </tr>
                     <tr>
                         <th scope="row"><label for="aiml_chat_theme"><?php esc_html_e( 'Theme', 'aiml-chat' ); ?></label></th>
                         <td>
                             <select id="aiml_chat_theme" name="aiml_chat_theme">
+                                <option value="" <?php selected( $theme, '' ); ?>><?php esc_html_e( 'Default (use dashboard setting)', 'aiml-chat' ); ?></option>
                                 <option value="auto" <?php selected( $theme, 'auto' ); ?>><?php esc_html_e( 'Auto (follows system)', 'aiml-chat' ); ?></option>
                                 <option value="light" <?php selected( $theme, 'light' ); ?>><?php esc_html_e( 'Light', 'aiml-chat' ); ?></option>
                                 <option value="dark" <?php selected( $theme, 'dark' ); ?>><?php esc_html_e( 'Dark', 'aiml-chat' ); ?></option>
