@@ -30,15 +30,24 @@ class AIML_Shortcode {
             return '<!-- AIML.chat: no API key configured -->';
         }
 
+        // Same source-URL settings the injector honors (self-hosted / local QA overrides).
+        // Blank widget URL (the normal case) = CDN default.
+        $widget_url = get_option( 'aiml_chat_widget_url', '' );
+        if ( empty( $widget_url ) ) {
+            $widget_url = 'https://cdn.aiml.chat/v1/widget.js';
+        }
+        $api_url = get_option( 'aiml_chat_api_url', '' );
+
         ob_start();
         ?>
         <script
-            src="https://cdn.aiml.chat/v1/widget.js"
+            src="<?php echo esc_url( $widget_url ); ?>"
             data-api-key="<?php echo esc_attr( $atts['api_key'] ); ?>"
             <?php if ( ! empty( $atts['website_id'] ) ) : ?>data-website-id="<?php echo esc_attr( $atts['website_id'] ); ?>"<?php endif; ?>
             <?php if ( ! empty( $atts['position'] ) ) : ?>data-position="<?php echo esc_attr( $atts['position'] ); ?>"<?php endif; ?>
             <?php if ( ! empty( $atts['theme'] ) ) : ?>data-theme="<?php echo esc_attr( $atts['theme'] ); ?>"<?php endif; ?>
             <?php if ( ! empty( $atts['primary_color'] ) ) : ?>data-primary-color="<?php echo esc_attr( $atts['primary_color'] ); ?>"<?php endif; ?>
+            <?php if ( ! empty( $api_url ) ) : ?>data-api-url="<?php echo esc_url( $api_url ); ?>"<?php endif; ?>
             async
         ></script>
         <?php

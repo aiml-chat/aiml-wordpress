@@ -18,7 +18,11 @@ class AIML_Widget_Injector {
         $theme      = get_option( 'aiml_chat_theme', '' );
         $color      = get_option( 'aiml_chat_primary_color', '' );
 
-        $widget_url = get_option( 'aiml_chat_widget_url', 'https://cdn.aiml.chat/v1/widget.js' );
+        // Blank (the normal case) = CDN default. Never enqueue an empty src.
+        $widget_url = get_option( 'aiml_chat_widget_url', '' );
+        if ( empty( $widget_url ) ) {
+            $widget_url = 'https://cdn.aiml.chat/v1/widget.js';
+        }
         wp_enqueue_script(
             'aiml-chat-widget',
             $widget_url,

@@ -57,8 +57,7 @@ class AIML_Admin {
             'sanitize_callback' => 'sanitize_textarea_field',
             'default'           => '',
         ) );
-        // Advanced overrides (no UI — set via wp option update / filters). Registered so they have
-        // a sanitize path and are exported/erased like every other plugin option.
+        // Advanced overrides (self-hosted widget bundle / non-default API endpoint).
         register_setting( 'aiml_chat_settings', 'aiml_chat_widget_url', array(
             'type'              => 'string',
             'sanitize_callback' => 'esc_url_raw',
@@ -108,6 +107,8 @@ class AIML_Admin {
         $theme      = get_option( 'aiml_chat_theme', '' );
         $color      = get_option( 'aiml_chat_primary_color', '' );
         $excluded   = get_option( 'aiml_chat_excluded_pages', '' );
+        $widget_url = get_option( 'aiml_chat_widget_url', '' );
+        $api_url    = get_option( 'aiml_chat_api_url', '' );
         ?>
         <div class="wrap aiml-wrap">
             <h1><?php esc_html_e( 'AIML.chat Settings', 'aiml-chat' ); ?></h1>
@@ -206,6 +207,37 @@ class AIML_Admin {
                                 placeholder="/cart&#10;/checkout&#10;/my-account"
                             ><?php echo esc_textarea( $excluded ); ?></textarea>
                             <p class="description"><?php esc_html_e( 'One URL path per line. Widget will not appear on these pages.', 'aiml-chat' ); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row" colspan="2"><h2 class="title"><?php esc_html_e( 'Advanced', 'aiml-chat' ); ?></h2></th>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="aiml_chat_widget_url"><?php esc_html_e( 'Widget Script URL', 'aiml-chat' ); ?></label></th>
+                        <td>
+                            <input
+                                type="url"
+                                id="aiml_chat_widget_url"
+                                name="aiml_chat_widget_url"
+                                value="<?php echo esc_attr( $widget_url ); ?>"
+                                class="regular-text code"
+                                placeholder="https://cdn.aiml.chat/v1/widget.js"
+                            />
+                            <p class="description"><?php esc_html_e( 'Leave blank to load the widget from the AIML.chat CDN (recommended). Only change for self-hosted or staging setups.', 'aiml-chat' ); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="aiml_chat_api_url"><?php esc_html_e( 'API URL', 'aiml-chat' ); ?></label></th>
+                        <td>
+                            <input
+                                type="url"
+                                id="aiml_chat_api_url"
+                                name="aiml_chat_api_url"
+                                value="<?php echo esc_attr( $api_url ); ?>"
+                                class="regular-text code"
+                                placeholder="https://api.aiml.chat"
+                            />
+                            <p class="description"><?php esc_html_e( 'Leave blank for the default AIML.chat API. Only change for self-hosted or staging setups.', 'aiml-chat' ); ?></p>
                         </td>
                     </tr>
                 </table>
